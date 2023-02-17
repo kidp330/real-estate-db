@@ -1,3 +1,12 @@
+-- Setup
+IF EXISTS(select * from sys.databases where name='RealEstateDatabase')
+	DROP DATABASE RealEstateDatabase
+CREATE DATABASE RealEstateDatabase
+
+DROP VIEW [Active Offers], [Recent Price Changes], [Owners By Houses Sold], [Districts By Listed Locations]
+DROP FUNCTION [Time Window Price Changes]
+DROP TABLE [Closed Offers], [Price Changes], Basements, Garages, Offers, Houses, Owners, Locations, Districts, Cities
+-- Table creation
 CREATE TABLE Owners (
 	Owner_id INT PRIMARY KEY,
 	Phone NVARCHAR(12),
