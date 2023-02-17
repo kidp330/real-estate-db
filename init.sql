@@ -1,12 +1,3 @@
--- Setup
-IF EXISTS(select * from sys.databases where name='RealEstateDatabase')
-	DROP DATABASE RealEstateDatabase
-CREATE DATABASE RealEstateDatabase
-
-DROP VIEW [Active Offers], [Recent Price Changes], [Owners Ordered By Houses Sold]
-DROP FUNCTION [Time Window Price Changes]
-DROP TABLE [Closed Offers], [Price Changes], Basements, Garages, Offers, Houses, Owners, Locations, Districts, Cities
--- Table creation
 CREATE TABLE Owners (
 	Owner_id INT PRIMARY KEY,
 	Phone NVARCHAR(12),
@@ -119,6 +110,29 @@ AS
 	RIGHT JOIN Owners
 	ON Counted.Owner_id = Owners.Owner_id
 -- Functions
+
+GO
+CREATE VIEW [Districts By Listed Locations] ([District Name], [City Name], [Number of locations])
+AS
+	WITH distr_to_num_locs (District_id, [Number of locations]) AS (
+		SELECT Districts.District_id,
+		CASE WHEN cnt IS NULL THEN 0 ELSE cnt END
+		FROM Districts
+		LEFT JOIN (
+			SELECT D.District_id, COUNT(*) AS cnt
+			FROM Districts AS D
+			JOIN Locations
+			ON D.District_id = Locations.District_id
+			GROUP BY D.District_id
+		) AS Naive_Cnt
+		ON Districts.District_id = Naive_Cnt.District_id
+	)
+	SELECT [District Name], [City Name], [Number of locations]
+	FROM Districts
+	JOIN Cities
+	ON Districts.City_id = Cities.City_id
+	JOIN distr_to_num_locs
+	ON distr_to_num_locs.District_id = Districts.District_id
 GO
 CREATE FUNCTION [Time Window Price Changes]
 	( @start DATE,
